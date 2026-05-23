@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import DashboardLayout from "../../layout/dashboard-layout";
 import { useGet } from "../../hooks/useGet";
 import { API_URL } from "../../hooks/http";
+import { usePatch } from "../../hooks/usePatch";
+import { Loader } from "lucide-react";
 
 export default function Profile() {
   const [isEditing, setIsEditing] = useState(false);
@@ -19,6 +21,15 @@ export default function Profile() {
     fullName: "",
     username: "",
     bio: "",
+  });
+
+  const updateHandler = usePatch({
+    url: `${API_URL}/v1/user`,
+    queryKey: "profile",
+    title: "Profile updated",
+    onSuccess: () => {
+      setIsEditing(false);
+    },
   });
 
   useEffect(() => {
@@ -40,7 +51,7 @@ export default function Profile() {
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
-    setIsEditing(false);
+    updateHandler.mutate(formData);
   };
 
   if (isPending) {
@@ -160,6 +171,7 @@ export default function Profile() {
                       id="fullName"
                       name="fullName"
                       required
+                      disabled={updateHandler.isPending}
                       value={formData.fullName}
                       onChange={handleInputChange}
                       className="mt-1 block w-full rounded-lg border border-[#CBD5E1] bg-white px-3 py-2 text-sm text-[#0F172A] shadow-sm focus:border-[#2563EB] focus:outline-none focus:ring-1 focus:ring-[#2563EB]"
@@ -182,6 +194,7 @@ export default function Profile() {
                         id="username"
                         name="username"
                         required
+                        disabled={updateHandler.isPending}
                         value={formData.username}
                         onChange={handleInputChange}
                         className="block w-full rounded-lg border border-[#CBD5E1] bg-white py-2 pl-7 pr-3 text-sm text-[#0F172A] focus:border-[#2563EB] focus:outline-none focus:ring-1 focus:ring-[#2563EB]"
@@ -201,6 +214,7 @@ export default function Profile() {
                     id="bio"
                     name="bio"
                     rows={3}
+                    disabled={updateHandler.isPending}
                     value={formData.bio}
                     onChange={handleInputChange}
                     className="mt-1 block w-full rounded-lg border border-[#CBD5E1] bg-white px-3 py-2 text-sm text-[#0F172A] shadow-sm focus:border-[#2563EB] focus:outline-none focus:ring-1 focus:ring-[#2563EB] resize-none"
@@ -210,6 +224,7 @@ export default function Profile() {
 
                 <div className="flex justify-end gap-3 pt-2">
                   <button
+                    disabled={updateHandler.isPending}
                     type="button"
                     onClick={() => setIsEditing(false)}
                     className="rounded-lg border border-[#CBD5E1] bg-white px-4 py-2 text-sm font-semibold text-[#334155] hover:bg-[#F8FAFC] transition-colors"
@@ -218,9 +233,13 @@ export default function Profile() {
                   </button>
                   <button
                     type="submit"
-                    className="rounded-lg bg-[#0F172A] px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-[#1E293B] transition-colors"
+                    disabled={updateHandler.isPending}
+                    className="rounded-lg flex items-center gap-2 justify-center bg-[#0F172A] px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-[#1E293B] transition-colors"
                   >
                     Save Changes
+                    {updateHandler.isPending && (
+                      <Loader color="#fff" size={14} className="animate-spin" />
+                    )}
                   </button>
                 </div>
               </form>
